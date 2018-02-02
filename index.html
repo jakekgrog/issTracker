@@ -46,7 +46,7 @@
 
 	function moveISS(map) {
 	    $.getJSON('http://api.open-notify.org/iss-now.json?callback=?', function(data) {
-
+								   // Your latitude & longitude below
 	    	$.getJSON('http://api.open-notify.org/iss-pass.json?lat=53.3498&lon=-6.2603&alt=20&n=5&callback=?', function(data) {
 			    data['response'].forEach(function (d) {
 			        var date = new Date(d['risetime']*1000);
