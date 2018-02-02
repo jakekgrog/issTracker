@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>ISS Tracker</title>
+  <meta name="description" content="ISS Tracker">
+  <meta name="author" content="Jake Grogan">
+  <meta http-equiv="refresh" content="10;file:///C:/Users/Jake/Desktop/projects/isstracker/isstrack/index.html"/>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css">
+
+  <style>
+  	#mapContainer {
+  		position: absolute;
+  		top: 0;
+  		bottom: 0;
+  		right: 300px;
+  		left: 0;
+  	}
+
+  	#info {
+  		position: absolute;
+  		top:30px;
+  		right:20px;
+  		font-family: helvetica;
+  	}
+  </style>
+</head>
+
+<body onload="moveISS();">
+  <div id="mapContainer"></div>
+  <div id="info">
+  	<h1>Information</h1>
+  	<h2>Dublin passes</h2>
+  	<ul id="isspass"></ul>
+  	<hr>
+  	<h2>Whos on board?</h2>
+  	<ul id="astronames"></ul>
+
+  </div>
+  <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script>
+
+	function moveISS(map) {
+	    $.getJSON('http://api.open-notify.org/iss-now.json?callback=?', function(data) {
+
+	    	$.getJSON('http://api.open-notify.org/iss-pass.json?lat=53.3498&lon=-6.2603&alt=20&n=5&callback=?', function(data) {
+			    data['response'].forEach(function (d) {
+			        var date = new Date(d['risetime']*1000);
+			         $('#isspass').append('<li>' + date.toString().slice(0, 24) + '</li>');
+			    });
+			});
+
+			$.getJSON('http://api.open-notify.org/astros.json?callback=?', function(data) {
+
+			    data['people'].forEach(function (d) {
+			         $('#astronames').append('<li>' + d['name'] + '</li>');
+			    });
+			});
+
+	        var lat = data['iss_position']['latitude'];
+	        var lon = data['iss_position']['longitude'];
+
+	        var map = L.map('mapContainer').setView([lat, lon], 6);
+	    	var layer = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+				subdomains: 'abcd',
+				maxZoom: 19
+			}).addTo(map);
+
+			var circle = L.circle([lat, lon], {
+			    color: 'red',
+			    fillColor: '#f03',
+			    fillOpacity: 0.3,
+			    radius: 400000
+			}).addTo(map);
+
+			var greenIcon = L.icon({
+			    iconUrl: 'iss.svg',
+
+			    iconSize:     [30, 30], // size of the icon
+			});
+
+			L.marker([lat, lon], {icon: greenIcon}).addTo(map);
+
+			
+
+	        iss.setLatLng([lat, lon]);
+	        isscirc.setLatLng([lat, lon]);
+	        map.panTo([lat, lon], animate=true);
+	    });
+	};
+  </script>
+</body>
+</html>
